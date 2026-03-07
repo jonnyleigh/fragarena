@@ -3,18 +3,20 @@
  *
  * Responsibilities:
  *   - Poll api/state.php every 100 ms, notify subscribers
- *   - Send player input to api/input.php every 50 ms
+ *   - Send player input to api/input.php at a throttled rate
  *   - join(), leave(), sendChat() wrappers
  */
 
 const POLL_INTERVAL  = 100;   // ms
-const INPUT_INTERVAL = 50;    // ms
+const INPUT_INTERVAL = 40;    // ms (25 Hz)
 
 let _stateCallbacks  = [];
 let _playerId        = null;
 let _pollTimer       = null;
 let _inputTimer      = null;
 let _pendingInput    = null;   // latest input snapshot to send
+let _inputInFlight   = false;  // at most one input POST at a time
+let _lastInputSentAt = 0;      // ms timestamp for send throttling
 
 /** Subscribe to state updates. Callback receives the full state object. */
 export function onState(cb) {
@@ -83,7 +85,7 @@ export function getPlayerId() { return _playerId; }
 
 function _startPolling() {
     _pollTimer  = setInterval(_poll,       POLL_INTERVAL);
-    _inputTimer = setInterval(_flushInput, INPUT_INTERVAL);
+    _inputTimer = setInterval(() => { void _flushInput(); }, INPUT_INTERVAL);
 }
 
 function _stopPolling() {
@@ -91,6 +93,9 @@ function _stopPolling() {
     clearInterval(_inputTimer);
     _pollTimer  = null;
     _inputTimer = null;
+    _pendingInput = null;
+    _inputInFlight = false;
+    _lastInputSentAt = 0;
 }
 
 async function _poll() {
@@ -104,9 +109,16 @@ async function _poll() {
 }
 
 async function _flushInput() {
-    if (!_pendingInput) return;
+    if (!_pendingInput || _inputInFlight) return;
+
+    const now = performance.now();
+    if (now - _lastInputSentAt < INPUT_INTERVAL) return;
+
     const payload   = _pendingInput;
     _pendingInput   = null;
+    _inputInFlight  = true;
+    _lastInputSentAt = now;
+
     try {
         await fetch('api/input.php', {
             method: 'POST',
@@ -114,4 +126,10 @@ async function _flushInput() {
             body: JSON.stringify(payload),
         });
     } catch (e) { /* ignore */ }
+    finally {
+        _inputInFlight = false;
+        if (_pendingInput) {
+            setTimeout(() => { void _flushInput(); }, 0);
+        }
+    }
 }
