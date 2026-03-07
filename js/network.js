@@ -22,13 +22,14 @@
  *   - On reconnect: automatically re-joins with the same handle
  */
 
-// Derive WebSocket URL from the page origin, defaulting port to 8080.
-// e.g. http://localhost → ws://localhost:8080
+// Derive WebSocket URL from the page origin.
+// The Node server serves both static files and WebSocket upgrades on the
+// same port, so the WebSocket endpoint is always the same host:port as the
+// page itself.  This works in local dev (http://localhost:8080) and on Azure
+// App Service (https://myapp.azurewebsites.net) without any hardcoded port.
 const _WS_URL = (() => {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host  = location.hostname;
-    const port  = 8080;
-    return `${proto}//${host}:${port}`;
+    return `${proto}//${location.host}`;
 })();
 
 const INPUT_INTERVAL = 40;   // ms — send input at 25 Hz (matches old _flushInput rate)
