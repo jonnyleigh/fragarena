@@ -79,6 +79,7 @@ export class Game {
         this._lastHealth    = null; // health on previous frame for delta detection
         this._dmgCanvas     = document.getElementById('dmg-dir-canvas');
         this._dmgCtx        = this._dmgCanvas ? this._dmgCanvas.getContext('2d') : null;
+        this._audioListenerErrorLogged = false;
 
         // Setup debug console commands
         this._setupDebugConsole();
@@ -172,6 +173,17 @@ debug.help()             Show this message
         this._running = false;
     }
 
+    _updateAudioListenerSafe(camera) {
+        try {
+            soundManager.updateAudioListener(camera);
+        } catch (err) {
+            if (!this._audioListenerErrorLogged) {
+                console.error('Audio listener update failed:', err);
+                this._audioListenerErrorLogged = true;
+            }
+        }
+    }
+
     // ------------------------------------------------------------------
     // Main loop
     // ------------------------------------------------------------------
@@ -223,7 +235,7 @@ debug.help()             Show this message
               const cam = this._renderer.camera;
               const fw = new THREE.Vector3();
               cam.getWorldDirection(fw);
-              soundManager.updateAudioListener({
+              this._updateAudioListenerSafe({
                   position: cam.position,
                   forward: fw,
                   up: cam.up
@@ -298,7 +310,7 @@ debug.help()             Show this message
             const cam = this._renderer.camera;
             const fw = new THREE.Vector3();
             cam.getWorldDirection(fw);
-            soundManager.updateAudioListener({
+            this._updateAudioListenerSafe({
                 position: cam.position,
                 forward: fw,
                 up: cam.up

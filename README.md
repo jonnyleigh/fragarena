@@ -1,5 +1,7 @@
 # FragArena
 
+![Screenshot](assets/screenshot.png)
+
 FragArena is a browser-based multiplayer 3D space shooter built with JavaScript (Three.js) and a PHP backend.
 Fully vibe-coded with Github Copilot
 

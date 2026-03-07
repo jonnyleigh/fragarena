@@ -30,6 +30,7 @@ class SoundManager {
     
     this.activeNodesCount = 0;
     this.maxActiveNodes = 24;
+    this._listenerPosition = { x: 0, y: 0, z: 0 };
 
     // Node pools for high frequency sounds
     this.pools = {
@@ -138,6 +139,58 @@ class SoundManager {
     return panner;
   }
 
+  _setAudioParamValue(node, propName, value) {
+    const param = node?.[propName];
+    if (!param) return false;
+    if ('value' in param) {
+      param.value = value;
+      return true;
+    }
+    if (typeof param.setValueAtTime === 'function' && this.ctx) {
+      param.setValueAtTime(value, this.ctx.currentTime);
+      return true;
+    }
+    return false;
+  }
+
+  _setNodePosition(node, position) {
+    if (!node || !position) return;
+
+    const usedAudioParams =
+      this._setAudioParamValue(node, 'positionX', position.x) &&
+      this._setAudioParamValue(node, 'positionY', position.y) &&
+      this._setAudioParamValue(node, 'positionZ', position.z);
+
+    if (!usedAudioParams && typeof node.setPosition === 'function') {
+      node.setPosition(position.x, position.y, position.z);
+    }
+  }
+
+  _setListenerOrientation(listener, forward, up) {
+    if (!listener || !forward || !up) return;
+
+    const usedAudioParams =
+      this._setAudioParamValue(listener, 'forwardX', forward.x) &&
+      this._setAudioParamValue(listener, 'forwardY', forward.y) &&
+      this._setAudioParamValue(listener, 'forwardZ', forward.z) &&
+      this._setAudioParamValue(listener, 'upX', up.x) &&
+      this._setAudioParamValue(listener, 'upY', up.y) &&
+      this._setAudioParamValue(listener, 'upZ', up.z);
+
+    if (!usedAudioParams && typeof listener.setOrientation === 'function') {
+      listener.setOrientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
+    }
+  }
+
+  _getListenerPosition(listener) {
+    const fallback = this._listenerPosition || { x: 0, y: 0, z: 0 };
+    return {
+      x: listener?.positionX?.value ?? fallback.x,
+      y: listener?.positionY?.value ?? fallback.y,
+      z: listener?.positionZ?.value ?? fallback.z,
+    };
+  }
+
   _getPooledNode(type) {
     if (!this.pools[type]) return null;
     const pool = this.pools[type];
@@ -183,9 +236,7 @@ class SoundManager {
         panner.connect(this.sfxGain);
         destination = panner;
       }
-      panner.positionX.value = worldPosition.x;
-      panner.positionY.value = worldPosition.y;
-      panner.positionZ.value = worldPosition.z;
+      this._setNodePosition(panner, worldPosition);
     }
 
     const releaseNode = () => {
@@ -208,39 +259,49 @@ class SoundManager {
 
   _getDistance(pos) {
     const l = this.ctx.listener;
-    const dx = pos.x - l.positionX.value;
-    const dy = pos.y - l.positionY.value;
-    const dz = pos.z - l.positionZ.value;
+    const listenerPos = this._getListenerPosition(l);
+    const dx = pos.x - listenerPos.x;
+    const dy = pos.y - listenerPos.y;
+    const dz = pos.z - listenerPos.z;
     return Math.sqrt(dx*dx + dy*dy + dz*dz);
   }
 
   updateAudioListener(camera) {
-    if (!this.ctx) return;
+    if (!this.ctx || !camera?.position || !camera?.up) return;
+
     const listener = this.ctx.listener;
-    listener.positionX.value = camera.position.x;
-    listener.positionY.value = camera.position.y;
-    listener.positionZ.value = camera.position.z;
-    
-    // Check if camera is a three.js camera
-    if (typeof camera.getWorldDirection === 'function') {
-        // We need a temp vector to get the direction
-        if (!this._tempDir) {
-           // We can mock a quick fallback or just use three if we know it
-           this._tempDir = {x:0, y:0, z:-1};
-        }
-        camera.getWorldDirection(this._tempDir);
-        listener.forwardX.value = this._tempDir.x;
-        listener.forwardY.value = this._tempDir.y;
-        listener.forwardZ.value = this._tempDir.z;
-    } else if (camera.forward) {
-        listener.forwardX.value = camera.forward.x;
-        listener.forwardY.value = camera.forward.y;
-        listener.forwardZ.value = camera.forward.z;
+    this._listenerPosition = {
+      x: camera.position.x,
+      y: camera.position.y,
+      z: camera.position.z,
+    };
+    this._setNodePosition(listener, this._listenerPosition);
+
+    let forward = camera.forward ?? null;
+    if (!forward && typeof camera.getWorldDirection === 'function') {
+      const tempDir = {
+        x: 0,
+        y: 0,
+        z: -1,
+        set(x, y, z) {
+          this.x = x;
+          this.y = y;
+          this.z = z;
+          return this;
+        },
+        normalize() {
+          return this;
+        },
+      };
+      camera.getWorldDirection(tempDir);
+      forward = tempDir;
     }
 
-    listener.upX.value = camera.up.x;
-    listener.upY.value = camera.up.y;
-    listener.upZ.value = camera.up.z;
+    if (!forward) {
+      forward = { x: 0, y: 0, z: -1 };
+    }
+
+    this._setListenerOrientation(listener, forward, camera.up);
   }
 
   // --- SOUND EFFECTS GENERATORS ---
