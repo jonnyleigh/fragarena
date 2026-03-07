@@ -1,0 +1,50 @@
+﻿C:\Users\jonny\Source\repos\FragArena
+|- .github/
+  |- workflows/
+    |- main_fragarena1.yml
+|- api/
+  |- chat.php
+  |- input.php
+  |- join.php
+  |- leave.php
+  |- reset.php
+  |- state.php
+|- assets/
+  |- favicon.svg
+  |- screenshot.png
+|- css/
+  |- style.css
+|- data/
+  |- .htaccess
+  |- game_state.json
+  |- web.config
+|- files.ps1
+|- index.html
+|- js/
+  |- arena.js
+  |- chat.js
+  |- game.js
+  |- hud.js
+  |- input.js
+  |- main.js
+  |- network.js
+  |- player.js
+  |- procedural.js
+  |- radar.js
+  |- renderer.js
+  |- sound-manager.js
+  |- weapons.js
+|- lib/
+  |- BotAI.php
+  |- GameState.php
+  |- GameTick.php
+  |- Weapons.php
+|- music/
+  |- 1.mp3
+  |- 2.mp3
+  |- 3.mp3
+  |- 4.mp3
+  |- manifest.php
+|- Prompt.md
+|- README.md
+|- SoundEffectsPrompt.md
