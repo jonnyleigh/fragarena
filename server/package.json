@@ -1,0 +1,13 @@
+{
+  "name": "fragarena-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "FragArena WebSocket game server (Node.js port of PHP backend)",
+  "dependencies": {
+    "ws": "^8.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  }
+}
