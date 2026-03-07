@@ -1,0 +1,382 @@
+/* ================================================================
+   FragArena — main stylesheet
+   ================================================================ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+#dmg-dir-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000011;
+    color: #cceeff;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* ----------------------------------------------------------------
+   Join screen
+   ---------------------------------------------------------------- */
+
+#join-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, #000820 0%, #000011 100%);
+    z-index: 100;
+}
+
+.join-box {
+    text-align: center;
+    padding: 3rem 3.5rem;
+    border: 1px solid #0af;
+    background: rgba(0,20,40,0.8);
+    box-shadow: 0 0 40px rgba(0,140,255,0.25);
+    max-width: 440px;
+    width: 90%;
+}
+
+.game-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: #fff;
+    text-shadow: 0 0 20px #0af, 0 0 40px #0af;
+    margin-bottom: 0.3rem;
+}
+.game-title span { color: #0af; }
+
+.subtitle {
+    font-size: 0.85rem;
+    letter-spacing: 0.25em;
+    color: #0af;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+    text-align: left;
+}
+.form-group label {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: #0af;
+    margin-bottom: 0.4rem;
+}
+.form-group input {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #0af;
+    background: rgba(0,20,40,0.9);
+    color: #fff;
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: box-shadow 0.2s;
+}
+.form-group input:focus {
+    box-shadow: 0 0 10px #0af;
+}
+
+#join-btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    background: #0af;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+#join-btn:hover { background: #4cf; box-shadow: 0 0 15px #0af; }
+#join-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.spinner { color: #0af; font-size: 0.85rem; margin-bottom: 0.5rem; }
+
+.error-msg {
+    color: #f55;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.controls-hint {
+    margin-top: 1.5rem;
+    font-size: 0.7rem;
+    color: #668;
+    line-height: 1.8;
+}
+
+.debug-bar {
+    margin-top: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    border-top: 1px solid #2a2a3a;
+    padding-top: 0.9rem;
+}
+
+.debug-btn {
+    background: #1a1a2e;
+    color: #f80;
+    border: 1px solid #f80;
+    border-radius: 4px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.7rem;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s;
+}
+.debug-btn:hover  { background: #2a1a00; }
+.debug-btn:disabled { opacity: 0.4; cursor: default; }
+
+.debug-msg {
+    font-size: 0.7rem;
+    font-family: 'Courier New', monospace;
+    color: #aaa;
+}
+
+/* ----------------------------------------------------------------
+   Game canvas
+   ---------------------------------------------------------------- */
+
+#game-canvas {
+    position: fixed;
+    inset: 0;
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    cursor: crosshair;
+}
+
+/* ----------------------------------------------------------------
+   HUD overlay
+   ---------------------------------------------------------------- */
+
+#hud {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Top-left — health */
+#hud-tl {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: 180px;
+}
+
+/* Top-right — weapon */
+#hud-tr {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 180px;
+    text-align: right;
+}
+
+.hud-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: #0af;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.bar-outer {
+    width: 100%;
+    height: 8px;
+    background: rgba(0,40,80,0.7);
+    border: 1px solid #0af4;
+    margin-bottom: 3px;
+}
+.bar-inner {
+    height: 100%;
+    transition: width 0.1s linear;
+}
+
+.stat-val {
+    font-size: 0.8rem;
+    color: #cef;
+}
+
+/* Bottom-left — score */
+#hud-bl {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    font-size: 0.75rem;
+    color: #adf;
+}
+
+/* Bottom-right — radar */
+#hud-br {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+}
+#radar-canvas {
+    border: 1px solid #0af6;
+    border-radius: 50%;
+    display: block;
+}
+
+/* Right side — leaderboard */
+#hud-leaderboard-wrap {
+    position: absolute;
+    top: 80px;
+    right: 16px;
+    width: 180px;
+    background: rgba(0,10,25,0.65);
+    border: 1px solid #0af3;
+    padding: 8px;
+}
+
+#hud-leaderboard {
+    margin-top: 4px;
+}
+.lb-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #adf;
+    padding: 1px 0;
+    border-bottom: 1px solid #0af1;
+}
+.lb-rank  { color: #668; width: 16px; }
+.lb-handle { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-handle.bot { color: #f88; }
+.lb-score { color: #fff; font-weight: bold; width: 30px; text-align: right; }
+
+/* Bottom-centre — chat log */
+#hud-chat-log {
+    position: absolute;
+    bottom: 55px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 420px;
+    max-height: 140px;
+    overflow-y: auto;
+    pointer-events: none;
+}
+.chat-msg {
+    font-size: 0.75rem;
+    color: #cde;
+    line-height: 1.5;
+    text-shadow: 0 1px 3px #000;
+}
+.chat-handle { color: #0af; font-weight: bold; margin-right: 4px; }
+
+/* Centre — respawn countdown */
+#hud-respawn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    color: #f55;
+    text-shadow: 0 0 20px #f00;
+    text-align: center;
+    background: rgba(0,0,0,0.5);
+    padding: 1rem 2rem;
+    border: 1px solid #f555;
+}
+
+/* Kill feed */
+#hud-killfeed {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+.kf-item {
+    font-size: 0.8rem;
+    color: #ff8;
+    text-shadow: 0 2px 6px #000;
+    margin-bottom: 2px;
+    animation: kf-fade 4s forwards;
+}
+@keyframes kf-fade {
+    0%   { opacity: 1; transform: translateY(0); }
+    70%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* ----------------------------------------------------------------
+   Chat input overlay
+   ---------------------------------------------------------------- */
+
+#chat-input-overlay {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    background: rgba(0,5,15,0.7);
+    z-index: 20;
+    pointer-events: all;
+}
+
+#chat-input-box {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    max-width: 500px;
+}
+
+#chat-input-field {
+    flex: 1;
+    padding: 0.5rem 0.8rem;
+    background: rgba(0,20,40,0.95);
+    border: 1px solid #0af;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+}
+#chat-input-field:focus { box-shadow: 0 0 8px #0af; }
+
+#chat-send-btn {
+    padding: 0.5rem 1rem;
+    background: #0af;
+    border: none;
+    color: #000;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    pointer-events: all;
+}
+#chat-send-btn:hover { background: #4cf; }
+
+/* ----------------------------------------------------------------
+   Scrollbar style (minor)
+   ---------------------------------------------------------------- */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #0af4; border-radius: 2px; }

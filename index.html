@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FragArena</title>    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ================================================================
+     JOIN SCREEN
+     ================================================================ -->
+<div id="join-screen">
+    <div class="join-box">
+        <h1 class="game-title">FRAG<span>ARENA</span></h1>
+        <p class="subtitle">6-Player 3D Space Combat</p>
+
+        <div class="form-group">
+            <label for="handle-input">PILOT HANDLE</label>
+            <input id="handle-input" type="text" maxlength="20" placeholder="e.g. Wraith99" autocomplete="off" />
+        </div>
+
+        <button id="join-btn">ENTER ARENA</button>
+        <div id="join-loading" class="spinner" style="display:none">Connecting…</div>
+        <div id="join-error"   class="error-msg"  style="display:none"></div>
+
+        <div class="controls-hint">
+            <b>Controls:</b>
+            WSAD move &nbsp;|&nbsp; Mouse look &nbsp;|&nbsp;
+            LMB fire &nbsp;|&nbsp; Space up &nbsp;|&nbsp; Shift down &nbsp;|&nbsp;
+            T chat &nbsp;|&nbsp; Esc quit
+        </div>
+
+        <section class="audio-settings">
+            <h3>Audio Settings</h3>
+
+            <div class="setting-row">
+                <label for="sfx-toggle">Sound Effects</label>
+                <button id="sfx-toggle" class="toggle-btn" aria-pressed="true">
+                    <span class="toggle-icon">🔊</span>
+                    <span class="toggle-label">ON</span>
+                </button>
+                <input type="range" id="sfx-volume" min="0" max="100" value="80" aria-label="Sound effects volume" />
+            </div>
+
+            <div class="setting-row">
+                <label for="music-toggle">Music</label>
+                <button id="music-toggle" class="toggle-btn" aria-pressed="true">
+                    <span class="toggle-icon">🎵</span>
+                    <span class="toggle-label">ON</span>
+                </button>
+                <input type="range" id="music-volume" min="0" max="100" value="50" aria-label="Music volume" />
+                <span id="music-status" class="music-status"></span>
+            </div>
+        </section>
+
+        <div class="debug-bar">
+            <button id="reset-btn" class="debug-btn" title="Wipe server state and regenerate arena">&#9888; RESET SERVER</button>
+            <span id="reset-msg" class="debug-msg"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================
+     GAME UI (hidden until joined)
+     ================================================================ -->
+<div id="game-ui" style="display:none">
+
+    <!-- The Three.js render target -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Damage direction indicator overlay -->
+    <canvas id="dmg-dir-canvas"></canvas>
+
+    <!-- ---- HUD overlay ---- -->
+    <div id="hud">
+
+        <!-- Top-left: health -->
+        <div id="hud-tl">
+            <div class="hud-label">HULL</div>
+            <div class="bar-outer">
+                <div id="hud-health-bar" class="bar-inner" style="width:100%;background:#0f0"></div>
+            </div>
+            <div id="hud-health-text" class="stat-val">200</div>
+        </div>
+
+        <!-- Top-right: weapon -->
+        <div id="hud-tr">
+            <div id="hud-weapon-name" class="hud-label">Pulse Laser</div>
+            <div class="bar-outer">
+                <div id="hud-weapon-cool" class="bar-inner" style="width:100%;background:#0af"></div>
+            </div>
+            <div id="hud-weapon-ammo" class="stat-val">∞</div>
+        </div>
+
+        <!-- Bottom-left: score panel -->
+        <div id="hud-bl">
+            <div id="hud-score">Score: 0 &nbsp; K/D: 0/0 &nbsp; Time: 0:00</div>
+        </div>
+
+        <!-- Bottom-right: radar -->
+        <div id="hud-br">
+            <canvas id="radar-canvas" width="130" height="130"></canvas>
+        </div>
+
+        <!-- Right side: leaderboard -->
+        <div id="hud-leaderboard-wrap">
+            <div class="hud-label">LEADERBOARD</div>
+            <div id="hud-leaderboard"></div>
+        </div>
+
+        <!-- Bottom-centre: chat log -->
+        <div id="hud-chat-log"></div>
+
+        <!-- Centre: respawn countdown -->
+        <div id="hud-respawn" style="display:none"></div>
+
+        <!-- Kill feed (top-centre) -->
+        <div id="hud-killfeed"></div>
+
+    </div><!-- /#hud -->
+
+    <!-- ---- Chat input overlay ---- -->
+    <div id="chat-input-overlay" style="display:none">
+        <div id="chat-input-box">
+            <input id="chat-input-field" type="text" maxlength="200" placeholder="Message all…" autocomplete="off" />
+            <button id="chat-send-btn">Send</button>
+        </div>
+    </div>
+
+</div><!-- /#game-ui -->
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
