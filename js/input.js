@@ -38,12 +38,21 @@ export function init(canvas, { onChatOpen, onQuit }) {
     _onQuit     = onQuit;
 
     canvas.addEventListener('click', () => {
-        if (!_chatMode) canvas.requestPointerLock();
+        if (!_chatMode) {
+            const lock = canvas.requestPointerLock
+                ? canvas.requestPointerLock()
+                : canvas.mozRequestPointerLock?.();
+            if (lock && typeof lock.catch === 'function') {
+                lock.catch(err => console.warn('Pointer lock request failed:', err));
+            }
+        }
     });
 
-    document.addEventListener('pointerlockchange', () => {
-        _locked = document.pointerLockElement === canvas;
-    });
+    const onPointerLockChange = () => {
+        _locked = (document.pointerLockElement || document.mozPointerLockElement) === canvas;
+    };
+    document.addEventListener('pointerlockchange', onPointerLockChange);
+    document.addEventListener('mozpointerlockchange', onPointerLockChange);
 
     document.addEventListener('mousemove', (e) => {
         if (!_locked || _chatMode) return;
