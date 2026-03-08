@@ -281,7 +281,7 @@ export class GameTick {
         });
 
         if (hitPlayer !== null) {
-            GameTick._damagePlayer(state, hitPlayer, def.damage, pi);
+            GameTick._damagePlayer(state, hitPlayer, def.damage, pi, p.weapon);
         }
 
         state.players[pi].canFireAt = now + Weapons.cooldownSeconds(p.weapon);
@@ -474,7 +474,8 @@ export class GameTick {
                 );
                 if (t !== null && t < shieldT) {
                     const shooterIndex = GameState.findPlayerIndex(state, b.ownerId);
-                    GameTick._damagePlayer(state, pi, b.damage, shooterIndex);
+                    const shooterWeapon = shooterIndex >= 0 ? state.players[shooterIndex].weapon : null;
+                    GameTick._damagePlayer(state, pi, b.damage, shooterIndex, shooterWeapon);
                     hit = true;
                     break;
                 }
@@ -538,13 +539,14 @@ export class GameTick {
      * Applies damage and records the shooter's id as lastDamagedBy.
      * NOTE: health is clamped to 0 minimum (not below).
      */
-    static _damagePlayer(state, pi, damage, shooterIndex) {
+    static _damagePlayer(state, pi, damage, shooterIndex, weaponType = null) {
         state.players[pi].health -= damage;
         if (state.players[pi].health < 0) {
             state.players[pi].health = 0;
         }
         if (shooterIndex >= 0) {
-            state.players[pi].lastDamagedBy = state.players[shooterIndex].id;
+            state.players[pi].lastDamagedBy       = state.players[shooterIndex].id;
+            state.players[pi].lastDamagedByWeapon = weaponType ?? state.players[shooterIndex].weapon;
         }
     }
 
@@ -573,8 +575,9 @@ export class GameTick {
                 if (killerIdx >= 0) {
                     state.players[killerIdx].score = (state.players[killerIdx].score ?? 0) + 1;
                     state.players[killerIdx].kills = (state.players[killerIdx].kills ?? 0) + 1;
+                    const weaponLabel = Weapons.DEFS[p.lastDamagedByWeapon]?.label ?? p.lastDamagedByWeapon ?? 'unknown weapon';
                     GameState.addChat(state, 'System',
-                        `${state.players[killerIdx].handle} fragged ${p.handle}`);
+                        `${state.players[killerIdx].handle} fragged ${p.handle} with the ${weaponLabel}`);
                 }
             }
 

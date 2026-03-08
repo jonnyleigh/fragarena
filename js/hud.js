@@ -43,6 +43,9 @@ export class HUD {
     update(serverPlayer, allPlayers, chat, now) {
         if (!serverPlayer) return;
 
+        this._myId     = serverPlayer.id;
+        this._myHandle = serverPlayer.handle;
+
         this._updateHealth(serverPlayer);
         this._updateWeapon(serverPlayer, now);
         this._updateScore(serverPlayer);
@@ -95,13 +98,16 @@ export class HUD {
     _updateLeaderboard(players) {
         if (!this._els.leaderboard) return;
         const sorted = [...players].sort((a, b) => b.score - a.score).slice(0, 8);
-        this._els.leaderboard.innerHTML = sorted.map((p, i) =>
-            `<div class="lb-row">
+        const myId = this._myId;
+        this._els.leaderboard.innerHTML = sorted.map((p, i) => {
+            const isSelf = p.id === myId;
+            const handleClass = ['lb-handle', p.isBot ? 'bot' : '', isSelf ? 'lb-self' : ''].filter(Boolean).join(' ');
+            return `<div class="lb-row${isSelf ? ' lb-row-self' : ''}">
                 <span class="lb-rank">${i+1}</span>
-                <span class="lb-handle${p.isBot ? ' bot' : ''}">${_esc(p.handle)}</span>
+                <span class="${handleClass}">${_esc(p.handle)}</span>
                 <span class="lb-score">${p.score}</span>
-             </div>`
-        ).join('');
+             </div>`;
+        }).join('');
     }
 
     _updateChat(chat) {
@@ -116,7 +122,7 @@ export class HUD {
 
             for (const m of newMessages) {
                 if (m.handle === 'System' && m.message.includes(' fragged ')) {
-                    this.showKillFeed(m.message);
+                    this.showKillFeed(m.message, this._myHandle);
                 }
             }
         }
@@ -148,11 +154,20 @@ export class HUD {
         }
     }
 
-    showKillFeed(text) {
+    showKillFeed(rawText, myHandle) {
         const feed = document.getElementById('hud-killfeed');
         if (!feed) return;
+
+        // Parse "KillerHandle fragged VictimHandle with the WeaponLabel"
+        // and replace the local player's name with "You" / "you".
+        const text = _formatFragMessage(rawText, myHandle);
+        const involvesMe = myHandle && (
+            rawText.startsWith(myHandle + ' fragged') ||
+            rawText.includes(' fragged ' + myHandle)
+        );
+
         const item = document.createElement('div');
-        item.className = 'kf-item';
+        item.className = 'kf-item' + (involvesMe ? ' kf-item-me' : '');
         item.textContent = text;
         feed.appendChild(item);
         setTimeout(() => item.remove(), 4000);
@@ -161,4 +176,30 @@ export class HUD {
 
 function _esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/**
+ * Formats a frag message for the kill feed.
+ * Replaces the local player's handle with "You"/"you" where appropriate.
+ * Expected input format: "KillerHandle fragged VictimHandle with the WeaponLabel"
+ */
+function _formatFragMessage(msg, myHandle) {
+    if (!myHandle) return msg;
+
+    const fragTag  = ' fragged ';
+    const fragIdx  = msg.indexOf(fragTag);
+    if (fragIdx === -1) return msg;
+
+    const killer = msg.slice(0, fragIdx);
+    const rest   = msg.slice(fragIdx + fragTag.length);
+
+    const withTag  = ' with the ';
+    const withIdx  = rest.indexOf(withTag);
+    const victim   = withIdx === -1 ? rest : rest.slice(0, withIdx);
+    const suffix   = withIdx === -1 ? '' : rest.slice(withIdx);
+
+    const killerDisplay = killer === myHandle ? 'You' : killer;
+    const victimDisplay = victim === myHandle ? 'you' : victim;
+
+    return `${killerDisplay} fragged ${victimDisplay}${suffix}`;
 }
