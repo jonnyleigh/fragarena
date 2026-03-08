@@ -267,6 +267,8 @@ html, body {
 .lb-rank  { color: #668; width: 16px; }
 .lb-handle { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lb-handle.bot { color: #f88; }
+.lb-handle.lb-self { color: #fd4; font-weight: bold; }
+.lb-row-self { background: rgba(255, 220, 60, 0.08); border-radius: 2px; }
 .lb-score { color: #fff; font-weight: bold; width: 30px; text-align: right; }
 
 /* Bottom-centre — chat log */
@@ -319,6 +321,11 @@ html, body {
     text-shadow: 0 2px 6px #000;
     margin-bottom: 2px;
     animation: kf-fade 4s forwards;
+}
+.kf-item-me {
+    color: #4df;
+    font-weight: bold;
+    font-size: 0.85rem;
 }
 @keyframes kf-fade {
     0%   { opacity: 1; transform: translateY(0); }
