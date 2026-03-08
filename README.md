@@ -176,8 +176,13 @@ Open browser dev tools and use:
 - `data/` — Server state file
 - `assets/`, `css/`, `music/` — Frontend resources
 
+## Hosting
+
+Hosted on Azure WebApp, linux node.
+
 ## Deployment
 
 Production URL:
 
 https://fragarena1.azurewebsites.net
+
